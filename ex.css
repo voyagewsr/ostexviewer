@@ -1,0 +1,227 @@
+@import url("reset.css");
+@import url("849680.css");
+/*  e85xFVgQgdS=n!  EDW*/
+/*  Agv2rT35Nd^9_4  GA*/
+body {
+    font-size: 0.8em;
+    padding: 10px;
+}
+
+h1 {
+    font-size: 1.2em;
+    font-weight: bold;
+    padding: 5px;
+}
+
+h3 {
+    font-size: 0.8em;
+    background: white;
+    padding: 5px;
+    border-radius: 4px;
+    margin-bottom: 3px;
+}
+
+article.exercise {
+    margin-bottom: 10px;
+}
+
+article header, article section, article footer {
+    margin: 3px;
+    overflow: hidden;
+    padding: 5px;
+}
+
+    .practice {
+        background: deepskyblue;
+    }
+
+    .review {
+        background: lightsalmon;
+    }
+
+    .test_prep {
+        background: orchid;
+    }
+
+    .grasp_check {
+        background: lightseagreen;
+    }
+
+div.question_id {
+    background: white;
+    float: left;
+    width: 160px;
+    padding: 5px;
+    border-radius: 4px;
+    text-align: center;
+}
+
+div.published {
+    padding: 5px;
+}
+
+div.published p {
+    padding: 5px;
+    text-align: right;
+    font-size: 0.8em;
+}
+
+article section {
+    background: lightgray;
+    overflow: hidden;
+    padding: 5px;
+    border-radius: 4px;
+}
+
+div.stem {
+    overflow: hidden;
+    padding: 5px;
+}
+
+div.stem_question {
+    float: left;
+    padding: 5px;
+}
+
+div.stem_text {
+    background: white;
+    width: 625px;
+    float: right;
+    padding: 5px;
+    text-align: left;
+    border-radius: 4px;
+}
+
+div.answer_wrapper {
+    overflow: hidden;
+    background: lightgray;
+    padding: 5px;
+    border: solid 1px darkgray;
+    border-radius: 4px;
+}
+
+div.answer_split {
+    margin-top: 5px;
+}
+
+div.selection {
+    overflow: hidden;
+    padding: 5px;
+    border-radius: 4px;
+    width: 8%;
+    float: left;
+}
+
+div.correctness {
+    position: relative;
+    padding: 0px;
+    float: left;
+}
+
+div.correctness span {
+    padding: 0px;
+}
+
+span.check::after {
+    color: green;
+    font-size: 1.5em;
+    display: inline-block;
+    content: '\2713';
+}
+
+div.letter {
+    padding: 5px;
+    float: right;
+}
+
+div.answer {
+    overflow: hidden;
+    background: white;
+    padding: 5px;
+    width: 88%;
+    border-radius: 4px;
+    float:right;
+}
+
+div.answer_text_wrapper {
+    background: white;
+    padding: 5px;
+    border-radius: 4px;
+}
+
+div.answer_text {
+    text-align: left;
+    padding: 5px;
+}
+
+div.feedback_wrapper {
+    background: lightgray;
+    padding: 5px;
+    border-radius: 4px;
+    margin-top: 5px;
+}
+
+div.feedback {
+    text-align: left;
+    padding: 5px;
+}
+
+article footer {
+    background: lightgray;
+    padding: 5px;
+    border-radius: 4px;
+}
+
+div.question_info_wrapper {
+    padding: 5px;
+    border: 1px solid darkgray;
+    border-radius: 4px;
+}
+
+div.question_info {
+    padding: 5px;
+    border-radius: 4px;
+}
+
+div.question_info p {
+    background: white;
+    padding: 5px;
+    font-size: 0.7em;
+    border-radius: 4px;
+}
+
+img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 5px;
+}
+
+div.stem_text ol {
+    list-style-type: decimal;
+    padding-left: 36px;
+}
+
+div.stem_text ul {
+    list-style-type: disc;
+    padding-left: 36px;
+}
+
+div.stem_text table {
+    border-collapse: collapse;
+    margin: 5px;
+    padding: 5px;
+}
+
+div.stem_text table, div.stem_text th, div.stem_text td {
+    border: 1px solid black;
+    padding: 4px;
+}
+
+div.stem_text table thead {
+    background-color: lightgray;
+}
+
+em {
+    font-style: italic;
+}
