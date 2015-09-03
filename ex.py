@@ -3,7 +3,7 @@
 import sys
 import getopt
 import exercise
-
+from bs4 import BeautifulSoup
 
 def main(argv):
     system = 'qa'

@@ -27,6 +27,11 @@ def fix_image(html):
         html = left + fix_image(right)
     return html
 
+def create_tag(tag_name, attrs_name=None):
+        if attrs_name:
+                return Tag(name=tag_name, attrs={'class': attrs_name})
+        return Tag(name=tag_name)
+
 
 class Portfolio(object):
     def __init__(self):
@@ -166,7 +171,7 @@ class Portfolio(object):
         import re
         html = re.sub("________", "", html)
         html = re.sub(r"\\rm", r"", html)  # r"\\text{", html)
-        html = re.sub(r"–", r"-", html)
+        html = re.sub(r"-", r"-", html)
         html = re.sub(r"\\gt", r'&gt;', html)
         html = re.sub(r"\\lt", r'&lt;', html)
         html = re.sub(r"2!", r'2\!', html)
@@ -178,8 +183,8 @@ class Portfolio(object):
         html = re.sub(r"\|", r"&#124;", html)
         html = re.sub(r"(% ((&lt;)|<)!\[CDATA\[\n)", r"", html)
         html = re.sub(r"( %]](&gt;|>))", r"", html)
-        with open('index2.txt', 'w+') as output:
-            output.write(html)
+        # with open('index2.txt', 'w+') as output:
+        #     output.write(html)
         soup = BeautifulSoup(html, 'html.parser')
         for nav_string in soup(text=True):
             if isinstance(nav_string, CData):
@@ -396,32 +401,59 @@ class Answer(object):
 
     def to_html(self, indent=0):
         id_number, version = self.parent.split('@')
-        html = \
-            '''
-            <div class="answer_wrapper">
-              <div class="selection">
-                <div class="correctness">
-                  <span class="%s"></span>
-                </div>
-                <div class="letter">
-                  <span>%s:</span>
-                </div>
-              </div>
-              <div class="answer">
-                <div class="answer_text_wrapper">
-                  <div class="answer_text">
-                    %s
-                  </div>
-                </div>
-                <div class="feedback_wrapper">
-                  <div class="feedback">
-                    %s
-                  </div>
-                </div>
-              </div>
-            </div>
-            ''' % ('check' if float(self.correctness) > 0.0 else '',
-                   self.choice,
-                   self.content_html,
-                   self.feedback_html)
-        return html
+        html = BeautifulSoup()
+        answer_wrapper = create_tag("div", "answer_wrapper")
+        selection = create_tag("div", "selection")
+        correctness = create_tag("div", "correctness")
+        check = create_tag("span", 'check' if float(self.correctness) > 0.0 else '')
+        letter = create_tag("div", "letter")
+        answer = create_tag("div", "answer")
+        answer_text_wrapper = create_tag("div", "answer_text_wrapper")
+        answer_text = create_tag("div", "answer_text")
+        feedback_wrapper = create_tag("div", "feedback_wrapper")
+        feedback = create_tag("div", "feedback")
+        span = create_tag("span")
+
+        html.append(answer_wrapper)
+        answer_wrapper.append(selection)
+        answer_wrapper.append(answer)
+        selection.append(correctness)
+        selection.append(letter)
+        correctness.append(check)
+        letter.append(span)
+        span.append(self.choice + ":")
+        answer.append(answer_text_wrapper)
+        answer.append(feedback_wrapper)
+        answer_text_wrapper.append(answer_text)
+        answer_text.append(self.content_html)
+        feedback_wrapper.append(feedback)
+        feedback.append(self.feedback_html)
+        # html = \
+        #     '''
+        #     <div class="answer_wrapper">
+        #       <div class="selection">
+        #         <div class="correctness">
+        #           <span class="%s"></span>
+        #         </div>
+        #         <div class="letter">
+        #           <span>%s:</span>
+        #         </div>
+        #       </div>
+        #       <div class="answer">
+        #         <div class="answer_text_wrapper">
+        #           <div class="answer_text">
+        #             %s
+        #           </div>
+        #         </div>
+        #         <div class="feedback_wrapper">
+        #           <div class="feedback">
+        #             %s
+        #           </div>
+        #         </div>
+        #       </div>
+        #     </div>
+        #     ''' % ('check' if float(self.correctness) > 0.0 else '',
+        #            self.choice,
+        #            self.content_html,
+        #            self.feedback_html)
+        return html.prettify()
