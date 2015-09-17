@@ -27,7 +27,7 @@ def fix_image(html):
         html = left + fix_image(right)
     return html
 
-def create_tag(parent, tag_name, attrs_name=None):
+def create_tag(parent, tag_name, class_name=None, id_number=None):
     """
     Create a new tag with tag_name and its attribute attrs_name and append it as
     the child of the parent tag. 
@@ -40,162 +40,92 @@ def create_tag(parent, tag_name, attrs_name=None):
     returns:
     The created tag.
     """
-    if attrs_name:
-            child = Tag(name=tag_name, attrs={'class': attrs_name})
+    if (id_number):
+        child = Tag(name=tag_name, attrs={'class': class_name, 'id': id_number})
+    if class_name:
+        child = Tag(name=tag_name, attrs={'class': class_name})
     else:
-            child = Tag(name=tag_name)
+        child = Tag(name=tag_name)
     try:
-            parent.append(child)
+        parent.append(child)
+    except AttributeError:
+        print ("Object " + str(type(parent)) + " does not have attribute append.")
     except Exception as detail:
             print ("Get exception when appending tag:", detail)
     return child
 
-def create_tag_with_id(parent, tag_name, attrs_name, id_number):
-            #     <article class="exercise%s" id="%s-%s">
-    """
-    Create a new tag with tag_name and its attribute attrs_name and append it as
-    the child of the parent tag. 
+class MarkdownHelper(object):
+    def add_clean_markdown(self, soup, tag_type, tag_class='', attribs=None):
+        if(tag_class):
+            return
+        if(attribs):
+            marker = '$' if tag_type == 'span' else '$$'
+            for tag in soup(tag_type, attrs=attribs):
+                try:
+                    if 'CDATA' in tag['data-math']:
+                        temp_tag = str(tag)
+                        math = ''
+                        tag_parts = temp_tag.split('"')
+                        count = 0
+                        if tag_parts is []:
+                            break
+                        for section in tag_parts:
+                            count += 1
+                            if 'CDATA' in section:
+                                section = section.replace('% &lt;![CDATA[\n',
+                                                          '"' + marker)
+                                section = section.replace(' %]]&gt;',
+                                                          marker + '"')
+                                section = section.replace('% <![CDATA[\n',
+                                                          marker)
+                                section = section.replace(' %]]>', marker)
+                                if section[:2] == '"$':
+                                    math = section[1:-1]
+                            if str(section) == '>% </span>':
+                                section = '>' + math + '</span>'
+                            tag_parts[count - 1] = section
+                        temp_tag = ''.join(tag_parts)
+                    tag.string.replace_with(marker + tag.string + marker)
+                    tag['data-math'] = '\n' if marker is '$$' else '' + \
+                                       marker + tag['data-math'] + marker + \
+                                       '\n' if marker is '$$' else ''
+                except AttributeError:
+                    continue
+                except Exception as e:
+                    raise e
+            return
 
-    params:
-    parent       -- the parent of the created tag
-    tag_name     -- name of the tag. For example, <div> has name "div"
-    attrs_name   -- optional. Name of the tag's attribute. For example, <div class="answer"> has attribute_name "answer">.
-
-    returns:
-    The created tag.
-    """
-
-    child = Tag(name=tag_name, attrs={'class': attrs_name, 'id': id_number})
-    try:
-            parent.append(child)
-    except Exception as detail:
-            print ("Get exception when appending tag:", detail)
-    return child
-
-def add_clean_markdown(soup, tag_type, tag_class='', attribs=None):
-    if(tag_class):
-        # for tag in soup(tag_type, class_=tag_class):
-        #    try:
-                # temp = tag.string
-                # tag.string = markdown.markdown(tag.string)
-                # if tag.string is '' or tag.string is u'':
-                #    tag.string = temp
-                # tag.string = tag.string
-        #    except Exception as e:
-        #        print("||%s|| ||%s|| ||%s||" % (e, tag, tag.string))
-        return
-    if(attribs):
-        marker = '$' if tag_type == 'span' else '$$'
-        for tag in soup(tag_type, attrs=attribs):
-            try:
-                if 'CDATA' in tag['data-math']:
-                    temp_tag = str(tag)
-                    math = ''
-                    tag_parts = temp_tag.split('"')
-                    count = 0
-                    if tag_parts is []:
-                        break
-                    # print('------------')
-                    # for section in tag_parts:
-                    #     print('*   ' + str(section))
-                    # print('------------')
-                    for section in tag_parts:
-                        count += 1
-                        # print('------------')
-                        # print('Section Start: %s\n%s' %
-                        #       (str(count), str(section)))
-                        if 'CDATA' in section:
-                            section = section.replace('% &lt;![CDATA[\n',
-                                                      '"' + marker)
-                            section = section.replace(' %]]&gt;',
-                                                      marker + '"')
-                            section = section.replace('% <![CDATA[\n',
-                                                      marker)
-                            section = section.replace(' %]]>', marker)
-                            if section[:2] == '"$':
-                                math = section[1:-1]
-                        if str(section) == '>% </span>':
-                            section = '>' + math + '</span>'
-                        #     print('Equal    :', section, '\n',
-                        #           str(section) == '>% </span>')
-                        # else:
-                        #     print('Not Equal:', section, '\n',
-                        #           str(section) == '>% </span>')
-                        # print('Section End  :\n' + str(section))
-                        tag_parts[count - 1] = section
-                        # print(tag_parts)
-                    temp_tag = ''.join(tag_parts)
-                    # new_tag = soup.new_tag(tag_type, )
-                    # print('**************************************\n' +
-                    #       temp_tag + '\n')
-                tag.string.replace_with(marker + tag.string + marker)
-                tag['data-math'] = '\n' if marker is '$$' else '' + \
-                                   marker + tag['data-math'] + marker + \
-                                   '\n' if marker is '$$' else ''
-            except AttributeError:
-                continue
-            except Exception as e:
-                raise e
-        return
-
-def add_latex(html):
-    """"""
-    import re
-    html = re.sub("________", "", html)
-    html = re.sub(r"\\rm", r"", html)  # r"\\text{", html)
-    html = re.sub(r"-", r"-", html)
-    html = re.sub(r"\\gt", r'&gt;', html)
-    html = re.sub(r"\\lt", r'&lt;', html)
-    html = re.sub(r"2!", r'2\!', html)
-    html = re.sub(r",!", r",\!", html)
-    html = re.sub(r"c!", r"c\!", html)
-    html = re.sub(r"!\cdot!", r"\!-\cdot-\!", html)
-    html = re.sub("\!$$", "$$", html)
-    html = re.sub(r"2\\\\!\\!", "2", html)
-    html = re.sub(r"\|", r"&#124;", html)
-    html = re.sub(r"(% ((&lt;)|<)!\[CDATA\[\n)", r"", html)
-    html = re.sub(r"( %]](&gt;|>))", r"", html)
-    with open('index2.txt', 'w+') as output:
-        output.write(html)
-    soup = BeautifulSoup(html, 'html.parser')
-    for nav_string in soup(text=True):
-        if isinstance(nav_string, CData):
-            tag = Tag(soup, name="math")
-            tag.insert(0, nav_string[:])
-            nav_string.replace_with(tag)
-    add_clean_markdown(soup, 'span', attribs={"data-math": True})
-#        for tag in soup.find_all('span', attrs={"data-math": True}):
-#            tag['data-math'] = '$' + tag['data-math'] + '$'
-#            try:
-#                tag.string.replace_with('$' + tag.string + '$')
-#            except Exception as e:
-#                print(e, tag, tag.string)
-    add_clean_markdown(soup, 'div', attribs={"data-math": True})
-#        for tag in soup.find_all('div', attrs={"data-math": True}):
-#            tag['data-math'] = '$$' + tag['data-math'] + '$$'
-#            try:
-#                tag.string.replace_with('$$' + tag.string + '$$')
-#            except Exception as e:
-#                print(e, tag, tag.string)
-    add_clean_markdown(soup, 'div', tag_class='stem_text')
-#        for tag in soup.find_all('div', class_='stem_text'):
-#            try:
-#               tag.string = bleach.clean(markdown.markdown(tag.string))
-#            except Exception:
-#                print("Issue: %s : %s" % (tag, tag.string))
-    add_clean_markdown(soup, 'div', tag_class='answer_text')
-#        for tag in soup.find_all('div', class_='answer_text'):
-#            try:
-#                tag.string = bleach.clean(markdown.markdown(tag.string))
-#            except Exception:
-#                print("Issue: %s : %s" % (tag, tag.string))
-    add_clean_markdown(soup, 'div', tag_class='feedback')
-#        for tag in soup.find_all('div', class_='feedback'):
-#            try:
-#                tag.string = bleach.clean(markdown.markdown(tag.string))
-#            except Exception:
-#                print("Issue: %s : %s" % (tag, tag.string))
-    return soup.prettify(formatter='html')
+    def add_latex(self, html):
+        """"""
+        import re
+        html = re.sub("________", "", html)
+        html = re.sub(r"\\rm", r"", html)  # r"\\text{", html)
+        html = re.sub(r"-", r"-", html)
+        html = re.sub(r"\\gt", r'&gt;', html)
+        html = re.sub(r"\\lt", r'&lt;', html)
+        html = re.sub(r"2!", r'2\!', html)
+        html = re.sub(r",!", r",\!", html)
+        html = re.sub(r"c!", r"c\!", html)
+        html = re.sub(r"!\cdot!", r"\!-\cdot-\!", html)
+        html = re.sub("\!$$", "$$", html)
+        html = re.sub(r"2\\\\!\\!", "2", html)
+        html = re.sub(r"\|", r"&#124;", html)
+        html = re.sub(r"(% ((&lt;)|<)!\[CDATA\[\n)", r"", html)
+        html = re.sub(r"( %]](&gt;|>))", r"", html)
+        with open('index2.txt', 'w+') as output:
+            output.write(html)
+        soup = BeautifulSoup(html, 'html.parser')
+        for nav_string in soup(text=True):
+            if isinstance(nav_string, CData):
+                tag = Tag(soup, name="math")
+                tag.insert(0, nav_string[:])
+                nav_string.replace_with(tag)
+        self.add_clean_markdown(soup, 'span', attribs={"data-math": True})
+        self.add_clean_markdown(soup, 'div', attribs={"data-math": True})
+        self.add_clean_markdown(soup, 'div', tag_class='stem_text')
+        self.add_clean_markdown(soup, 'div', tag_class='answer_text')
+        self.add_clean_markdown(soup, 'div', tag_class='feedback')
+        return soup
 
 class Portfolio(object):
     def __init__(self):
@@ -248,7 +178,7 @@ class Portfolio(object):
         with open('side2.html', 'r') as right:
             end = right.read()
         for ex in self.problems:
-            html.append(ex.to_html(5))
+            ex.build_soup(html, 5)
         with open('index2.html', 'w+') as output:
             output.write(start)
             output.write(html.prettify())
@@ -294,14 +224,13 @@ class Exercise(object):
         self.question = Question(self.uid, ex_json['questions'])
         self.type = self.get_question_type(self.tags)
 
-    def to_html(self, indent=0):
+    def build_soup(self, parent_tag, indent=0):
         """"""
         tags = ''
         for tag in self.tags:
             tags = tags + tag + ' '
         tags = tags[:-1]
-        html = BeautifulSoup('', 'html.parser')
-        article = create_tag_with_id(html, "article", "exercise " + self.type, str(self.number) + "-" + str(self.version))
+        article = create_tag(parent_tag, "article", "exercise " + self.type, str(self.number) + "-" + str(self.version))
         header = create_tag(article, "header")
         question_id = create_tag(header, "div", "question_id")
         h1 = create_tag(question_id, "h1")
@@ -309,7 +238,7 @@ class Exercise(object):
         published = create_tag(header, "div", "published")
         p1 = create_tag(published, "p")
         p1.append(self.published_at)
-        article.append(self.question.to_html())
+        self.question.build_soup(article)
         footer = create_tag(article, "footer")
         question_info_wrapper = create_tag(footer, "div", "question_info_wrapper")
         question_info = create_tag(question_info_wrapper, "div", "question_info")
@@ -347,7 +276,6 @@ class Exercise(object):
         #            self.published_at,
         #            self.question.to_html(),
         #            tags)
-        return html
 
     def get_question_type(self, tags):
         if 'os-practice-problems' in tags or 'os-practice-concepts' in tags:
@@ -416,24 +344,22 @@ class Question(object):
     __gt__ = lambda self, other: self.id > other.id
     __ge__ = lambda self, other: self.id >= other.id
 
-    def to_html(self, indent=0):
+    def build_soup(self, parent_tag, indent=0):
+        markdown_helper = MarkdownHelper()
         id_number, version = self.parent.split('@')
-        html = BeautifulSoup('', 'html.parser')
-        question = create_tag(html, "section", "question")
-        html.append(question)
+        question = create_tag(parent_tag, "section", "question")
         stem_question = create_tag(question, "div", "stem_question")
         stem_question.append("Question:")
         stem_text = create_tag(question, "div", "stem_text")
-        stem_text.append(BeautifulSoup(add_latex(self.stem_html), 'html.parser'))
-        answers = create_tag(html, "section", "answers")
+        stem_text.append(markdown_helper.add_latex(self.stem_html))
+        answers = create_tag(parent_tag, "section", "answers")
 
         ans_num = 1
         for answer in self.answers:
-            answers.append(answer.to_html())
+            answer.build_soup(answers)
             if ans_num < len(self.answers):
                 create_tag(answers, "div", "answer_split")
                 ans_num = ans_num + 1
-        html.append(BeautifulSoup('</section>', 'html.parser'))     
         # html = \
         #     '''
         #     <section class="question">
@@ -451,7 +377,6 @@ class Question(object):
         #         html = html + '<div class="answer_split"></div>'
         #         ans_num = ans_num + 1
         # html = html + '</section>'
-        return html
 
 
 class Answer(object):
@@ -471,10 +396,9 @@ class Answer(object):
     __gt__ = lambda self, other: self.id > other.id
     __ge__ = lambda self, other: self.id >= other.id
 
-    def to_html(self, indent=0):
+    def build_soup(self, parent_tag, indent=0):
         id_number, version = self.parent.split('@')
-        html = BeautifulSoup('', 'html.parser')
-        answer_wrapper = create_tag(html, "div", "answer_wrapper")
+        answer_wrapper = create_tag(parent_tag, "div", "answer_wrapper")
         selection = create_tag(answer_wrapper, "div", "selection")
         answer = create_tag(answer_wrapper, "div", "answer")
         correctness = create_tag(selection, "div", "correctness")
@@ -486,9 +410,10 @@ class Answer(object):
         answer_text = create_tag(answer_text_wrapper, "div", "answer_text")
         feedback = create_tag(feedback_wrapper, "div", "feedback")
 
+        markdown_helper = MarkdownHelper()
         span.append(self.choice + ":")
-        answer_text.append(BeautifulSoup(add_latex(self.content_html), 'html.parser'))
-        feedback.append(BeautifulSoup(add_latex(self.feedback_html), 'html.parser'))
+        answer_text.append(markdown_helper.add_latex(self.content_html))
+        feedback.append(markdown_helper.add_latex(self.feedback_html))
 
         # html = \
         #     '''
@@ -518,4 +443,3 @@ class Answer(object):
         #            self.choice,
         #            self.content_html,
         #            self.feedback_html)
-        return html
